@@ -1,0 +1,83 @@
+/* ── Reset y tokens globales ─────────────────────────────────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    /* Colores */
+    --color-bg:        #0a0e1a;
+    --color-surface:   #111827;
+    --color-card:      #1a2235;
+    --color-primary:   #00d4ff;
+    --color-success:   #00ff88;
+    --color-warning:   #ffaa00;
+    --color-error:     #ff4466;
+    --color-text:      #e2e8f0;
+    --color-muted:     #6b7280;
+
+    /* Tipografía */
+    --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Courier New', 'Fira Code', monospace;
+
+    /* Radios */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 212, 255, 0.06), transparent),
+        radial-gradient(ellipse 50% 30% at 90% 80%, rgba(0, 102, 255, 0.04), transparent);
+}
+
+#root {
+    min-height: 100vh;
+}
+
+/* ── Scrollbar personalizado ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--color-surface);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.4);
+}
+
+/* ── Tipografía ──────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 {
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+}
+
+/* ── Utilidades mínimas ──────────────────────────────────────────────────── */
+button {
+    font-family: var(--font-sans);
+    cursor: pointer;
+}

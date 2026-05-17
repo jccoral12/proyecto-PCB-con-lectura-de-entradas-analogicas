@@ -5,15 +5,15 @@ const mongoose = require('mongoose');
  * Lee la cadena de conexión de `process.env.MONGODB_CNN` o usa
  * un valor por defecto para conexión local.
  *
- * Ejemplo de URL local: mongodb://localhost:27017/electiva
+ * Ejemplo de URL local: mongodb://127.0.0.1:27017/electiva
  */
 const dbConnection = async () => {
     try {
-        const dbCnn = process.env.MONGODB_CNN || 'mongodb://localhost:27017/electiva';
+        const dbCnn = process.env.MONGODB_CNN || 'mongodb://127.0.0.1:27017/electiva';
         await mongoose.connect(dbCnn, {
             // opciones recomendadas por Mongoose
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+            
+            
         });
 
         console.log('Base de datos MongoDB conectada:', dbCnn);

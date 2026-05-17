@@ -4,11 +4,23 @@ const DatoSchema = Schema({
     dispositivo_uuid: {
         type: String,
         required: [true, 'El UUID del dispositivo es obligatorio'],
-        ref: 'Dispositivo' // Opcional: permite usar populate si se busca por uuid manualmente
+        ref: 'Dispositivo'
     },
-    valor: {
+    sensor1: {
         type: Number,
-        required: [true, 'El valor del sensor es obligatorio']
+        default: null
+    },
+    sensor2: {
+        type: Number,
+        default: null
+    },
+    sensor3: {
+        type: Number,
+        default: null
+    },
+    sensor4: {
+        type: Number,
+        default: null
     },
     fecha_insercion: {
         type: Date,
@@ -16,7 +28,6 @@ const DatoSchema = Schema({
     }
 });
 
-// Limpiar la respuesta JSON
 DatoSchema.methods.toJSON = function() {
     const { __v, _id, ...dato } = this.toObject();
     return dato;

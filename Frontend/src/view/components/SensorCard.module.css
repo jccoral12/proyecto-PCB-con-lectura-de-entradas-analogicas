@@ -1,0 +1,89 @@
+.card {
+    background: linear-gradient(135deg, #1a2235 0%, #111827 100%);
+    border: 1px solid rgba(0, 212, 255, 0.12);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.12);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.03), transparent);
+    pointer-events: none;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.icono {
+    font-size: 1.2rem;
+}
+
+.label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+.valor {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+}
+
+.numero {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #00d4ff;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.unidad {
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.sinDato {
+    font-size: 2rem;
+    color: #374151;
+    font-weight: 300;
+}
+
+.indicador {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4ff, #0066ff);
+    border-radius: 0 0 16px 16px;
+    opacity: 0.6;
+}
+
+/* Flash al actualizar valor */
+.flash {
+    animation: flashCard 0.5s ease-out;
+}
+
+@keyframes flashCard {
+    0%   { border-color: rgba(0, 212, 255, 0.8); box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+    100% { border-color: rgba(0, 212, 255, 0.12); box-shadow: none; }
+}

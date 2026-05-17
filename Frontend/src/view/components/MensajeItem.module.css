@@ -1,0 +1,67 @@
+.item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    animation: slideIn 0.3s ease-out;
+    transition: background 0.2s;
+}
+
+.item:hover {
+    background: rgba(0, 212, 255, 0.04);
+}
+
+.topRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.topic {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.hora {
+    font-size: 0.72rem;
+    color: #4b5563;
+    font-variant-numeric: tabular-nums;
+}
+
+.uuid {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-bottom: 0.4rem;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.02em;
+}
+
+.sensores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.sensor {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.sensor strong {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

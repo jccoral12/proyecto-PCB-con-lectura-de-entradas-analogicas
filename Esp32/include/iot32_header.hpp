@@ -1,81 +1,115 @@
 #pragma once
 #include <Arduino.h>
+
 // -------------------------------------------------------------------
-// Definiciones
+// Pines ESP32-S3 WROOM (según tabla de distribución de pines)
 // -------------------------------------------------------------------
-#define WIFILED 12 // GPIO12 LED WIFI
-#define MQTTLED 13 // GPIO13 LED MQTT
-#define APLED 2    // GPIO2 LED AP
+#define LED_GPIO        2   // GPIO2  - Pin 38: LED indicador único
+#define CAT_KEY_GPIO    1   // GPIO1  - Pin 39: Control encendido CAT A7670S
+#define CAT_TX_GPIO     17  // GPIO17 - Pin 10: UART TX hacia módulo CAT A7670S
+#define CAT_RX_GPIO     18  // GPIO18 - Pin 11: UART RX desde módulo CAT A7670S
+#define I2C_SDA_GPIO    8   // GPIO8  - Pin 12: I2C SDA - ADC externo ADS1115
+#define I2C_SCL_GPIO    9   // GPIO9  - Pin 17: I2C SCL - ADC externo ADS1115
+
+// Alias para el único LED físico en GPIO2
+#define WIFILED  LED_GPIO
+#define MQTTLED  LED_GPIO
+#define APLED    LED_GPIO
+
 // -------------------------------------------------------------------
-// CALCULAR LA CAPACIDAD DEL JSON
-// Asistente ArduinoJson: https://arduinojson.org/v6/assistant/
-// Documentación: https://arduinojson.org/v6/api/json/deserializejson/
+// Capacidad JSON
 // -------------------------------------------------------------------
 const size_t capacitySettings = 2500;
+
 // -------------------------------------------------------------------
-// Versión de Firmware desde las variables de entorno platformio.ini
+// Versión de Firmware
 // -------------------------------------------------------------------
 #define TEXTIFY(A) #A
 #define ESCAPEQUOTE(A) TEXTIFY(A)
-String device_fw_version = ESCAPEQUOTE(BUILD_TAG);
+extern String device_fw_version;
+
 // -------------------------------------------------------------------
-// Version de Hardware y Fabricante
+// Hardware y Fabricante
 // -------------------------------------------------------------------
-#define device_hw_version "IOTMETREX v1 00000000" // Versión del hardware
-#define device_manufacturer "IOTTS"               // Fabricante
+#define device_hw_version   "IOTMETREX v2 ESP32S3"
+#define device_manufacturer "IOTTS"
+
 // -------------------------------------------------------------------
-// Zona configuración Dispositivo
+// Configuración Dispositivo
 // -------------------------------------------------------------------
-boolean device_config_file;    // Identificador para archivo de configuración
-char device_config_serial[30]; // Numero de serie de cada Archivo configuración
-                               // unico
-char device_id[30];            // ID del dispositivo
-int device_restart;            // Número de reinicios
+extern boolean device_config_file;
+extern char    device_config_serial[30];
+extern char    device_id[30];
+extern int     device_restart;
+
 // -------------------------------------------------------------------
-// Zona configuración WIFI modo Cliente
+// WIFI modo Cliente
 // -------------------------------------------------------------------
-boolean wifi_ip_static;      // Uso de IP Estática DHCP
-char wifi_ssid[30];          // Nombre de la red WiFi
-char wifi_password[30];      // Contraseña de la Red WiFi
-char wifi_ipv4[15];          // Dir IPv4 Estático
-char wifi_gateway[15];       // Dir IPv4 Gateway
-char wifi_subnet[15];        // Dir IPv4 Subred
-char wifi_dns_primary[15];   // Dir IPv4 DNS primario
-char wifi_dns_secondary[15]; // Dir IPv4 DNS secundario
+extern boolean wifi_ip_static;
+extern char    wifi_ssid[30];
+extern char    wifi_password[30];
+extern char    wifi_ipv4[15];
+extern char    wifi_gateway[15];
+extern char    wifi_subnet[15];
+extern char    wifi_dns_primary[15];
+extern char    wifi_dns_secondary[15];
+
 // -------------------------------------------------------------------
-// Zona configuración WIFI modo AP
+// WIFI modo AP
 // -------------------------------------------------------------------
-boolean ap_mode;      // Uso de Modo AP
-char ap_ssid[31];     // Nombre del SSID AP
-char ap_password[63]; // Contraseña del AP
-int ap_chanel;        // Canal AP
-int ap_visibility;    // Es visible o no el AP  (0 - Visible  1 - Oculto)
-int ap_connect;       // Número de conexiones en el AP máx 8 conexiones ESP32
+extern boolean ap_mode;
+extern char    ap_ssid[31];
+extern char    ap_password[63];
+extern int     ap_chanel;
+extern int     ap_visibility;
+extern int     ap_connect;
+
 // -------------------------------------------------------------------
-// Zona configuración MQTT
+// MQTT
 // -------------------------------------------------------------------
-boolean mqtt_cloud_enable;      // Habilitar MQTT Broker
-char mqtt_cloud_id[50];         // Cliente ID MQTT Broker
-char mqtt_user[30];             // Usuario MQTT Broker
-char mqtt_password[39];         // Contraseña del MQTT Broker
-char mqtt_server[39];           // Servidor del MQTT Broker
-int mqtt_port;                  // Puerto servidor MQTT Broker
-boolean mqtt_retain;            // Habilitar mensajes retenidos
-int mqtt_qos;                   // Calidad del servicio
-boolean mqtt_time_send;         // Habilitar en envio de datos
-int mqtt_time_interval;         // Tiempo de envio por MQTT en milisegundos
-int mqtt_time_unit;             // Unidad de Tiempo (1s, 60m, 3600h)
-boolean mqtt_status_send;       // Habilitar en envio de estados
-char mqtt_topic_publish[150];   // Topic para publicar
-char mqtt_topic_subscribe[150]; // Topic para suscribirse
-char mqtt_custom_message[512];  // Mensaje JSON personalizado a publicar
+extern boolean mqtt_cloud_enable;
+extern char    mqtt_cloud_id[50];
+extern char    mqtt_user[30];
+extern char    mqtt_password[39];
+extern char    mqtt_server[39];
+extern int     mqtt_port;
+extern boolean mqtt_retain;
+extern int     mqtt_qos;
+extern boolean mqtt_time_send;
+extern int     mqtt_time_interval;
+extern int     mqtt_time_unit;
+extern boolean mqtt_status_send;
+extern char    mqtt_topic_publish[150];
+extern char    mqtt_topic_subscribe[150];
+extern char    mqtt_custom_message[512];
+
 // -------------------------------------------------------------------
-// Zona Firmware Update
+// Módulo CAT A7670S - Movistar Colombia
 // -------------------------------------------------------------------
-size_t content_len;
+#define CAT_APN         "internet.movistar.com.co"
+#define CAT_BAUD_RATE   115200
+#define CAT_TIMEOUT_MS  10000
+
+extern boolean cat_enable;
+extern boolean cat_network_ready;
+
+// -------------------------------------------------------------------
+// Sensores - 4 canales ADS1115
+// -------------------------------------------------------------------
+extern float   sensor1;
+extern float   sensor2;
+extern float   sensor3;
+extern float   sensor4;
+extern boolean adc_ok;
+
+// -------------------------------------------------------------------
+// Firmware Update
+// -------------------------------------------------------------------
+extern size_t content_len;
 #define U_PART U_SPIFFS
+
 // -------------------------------------------------------------------
-// Zona EEPROM para contador de reinicios
+// EEPROM - contador de reinicios
 // -------------------------------------------------------------------
-#define Start_Address 0
-#define Restart_Address Start_Address + sizeof(int)
+#define Start_Address   0
+#define Restart_Address (Start_Address + sizeof(int))

@@ -1,0 +1,39 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.activo {
+    background: #00ff88;
+    box-shadow: 0 0 8px #00ff88;
+    animation: pulso 2s ease-in-out infinite;
+}
+
+.inactivo {
+    background: #ff4466;
+    box-shadow: 0 0 8px #ff4466;
+}
+
+.texto {
+    color: #a0aec0;
+    font-weight: 500;
+}
+
+@keyframes pulso {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}

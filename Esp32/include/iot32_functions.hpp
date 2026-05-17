@@ -3,115 +3,117 @@
 #include "iot32_header.hpp"
 
 // -------------------------------------------------------------------
-// Genera un log en el puerto Serial
+// Log por Serial
 // -------------------------------------------------------------------
 void log(String s) { Serial.println(s); }
+
 // -------------------------------------------------------------------
-// Comprobar Memoria del ESP32
+// Información de memoria
 // -------------------------------------------------------------------
 void logMemory() {
-  log("[ MEM ] Free Heap: " + String(ESP.getFreeHeap()) + " bytes");
-  log("[ MEM ] Max Alloc Heap: " + String(ESP.getMaxAllocHeap()) + " bytes");
-  log("[ MEM ] Min Free Heap: " + String(ESP.getMinFreeHeap()) + " bytes");
-  log("[ MEM ] Flash Size: " + String(ESP.getFlashChipSize()) + " bytes");
+  log("[ MEM ] Free Heap    : " + String(ESP.getFreeHeap())    + " bytes");
+  log("[ MEM ] Max Alloc    : " + String(ESP.getMaxAllocHeap())+ " bytes");
+  log("[ MEM ] Min Free     : " + String(ESP.getMinFreeHeap()) + " bytes");
+  log("[ MEM ] Flash Size   : " + String(ESP.getFlashChipSize())+ " bytes");
 }
+
 // -------------------------------------------------------------------
-// Definir la Plataforma
+// Plataforma de hardware
 // -------------------------------------------------------------------
 String platform() {
-// Optiene la plataforma de hardware
 #ifdef ARDUINO_ESP32_DEV
   return "ESP32";
 #else
-  return "Generic";
+  return "ESP32-S3";
 #endif
 }
+
 // -------------------------------------------------------------------
-// De HEX a String
+// HEX a String (relleno a izquierda)
 // -------------------------------------------------------------------
 String hexStr(const uint64_t &h, const byte &l = 8) {
   String s1 = String((uint32_t)(h >> 32), HEX);
   s1.toUpperCase();
   String s2 = String((uint32_t)h, HEX);
   s2.toUpperCase();
-  // Padeamos s2 a 8 caracteres para que ocupe su lugar correcto
-  while (s2.length() < 8)
-    s2 = "0" + s2;
+  while (s2.length() < 8) s2 = "0" + s2;
   String s = s1 + s2;
-  // Padeamos el resultado final si es necesario
-  while (s.length() < l)
-    s = "0" + s;
+  while (s.length() < l) s = "0" + s;
   int start = (int)s.length() - (int)l;
-  if (start < 0)
-    start = 0;
+  if (start < 0) start = 0;
   return s.substring(start);
 }
+
 // -------------------------------------------------------------------
-// Crear un ID unico desde la direccion MAC
+// ID único desde dirección MAC
 // -------------------------------------------------------------------
 String idUnique() {
-  // Retorna los ultimos 4 Bytes del MAC rotados
   char idunique[15];
   uint64_t chipid = ESP.getEfuseMac();
   uint16_t chip = (uint16_t)(chipid >> 32);
   snprintf(idunique, 15, "%04X", chip);
   return idunique;
 }
+
 // -------------------------------------------------------------------
-// Número de serie del Dispositivo único
+// Número de serie único del dispositivo
 // -------------------------------------------------------------------
 String deviceID() {
-  return String(device_manufacturer) + hexStr(ESP.getEfuseMac()) +
-         String(idUnique());
+  return String(device_manufacturer) + hexStr(ESP.getEfuseMac()) + idUnique();
 }
+
 // -------------------------------------------------------------------
-// Configurar los Pines de Salida WIFI - MQTT
+// Configurar pines de salida - ESP32-S3 WROOM
 // -------------------------------------------------------------------
 void settingPines() {
-  pinMode(WIFILED, OUTPUT);
-  pinMode(MQTTLED, OUTPUT);
-  pinMode(APLED, OUTPUT);
-  setOffSingle(WIFILED);
-  setOffSingle(MQTTLED);
-  setOffSingle(APLED);
+  // LED único: GPIO2
+  pinMode(LED_GPIO, OUTPUT);
+  digitalWrite(LED_GPIO, LOW);
+  log("[ INFO ] Pin LED configurado: GPIO" + String(LED_GPIO));
+
+  // Pin KEY del módulo CAT A7670S: GPIO1 (HIGH = inactivo)
+  pinMode(CAT_KEY_GPIO, OUTPUT);
+  digitalWrite(CAT_KEY_GPIO, HIGH);
+  log("[ INFO ] Pin CAT_KEY configurado: GPIO" + String(CAT_KEY_GPIO));
 }
+
 // -------------------------------------------------------------------
-// Convierte un char a IP
+// Convertir string "n.n.n.n" a IPAddress
 // -------------------------------------------------------------------
-uint8_t ip[4]; // Variable función convertir string a IP
+static uint8_t _ip[4];
 IPAddress CharToIP(const char *str) {
-  sscanf(str, "%hhu.%hhu.%hhu.%hhu", &ip[0], &ip[1], &ip[2], &ip[3]);
-  return IPAddress(ip[0], ip[1], ip[2], ip[3]);
+  sscanf(str, "%hhu.%hhu.%hhu.%hhu", &_ip[0], &_ip[1], &_ip[2], &_ip[3]);
+  return IPAddress(_ip[0], _ip[1], _ip[2], _ip[3]);
 }
+
 // -------------------------------------------------------------------
-// Retorna IPAddress en formato "n.n.n.n" de IP a String
+// IPAddress a String "n.n.n.n"
 // -------------------------------------------------------------------
 String ipStr(const IPAddress &ip) {
-  String sFn = "";
-  for (byte bFn = 0; bFn < 3; bFn++) {
-    sFn += String((ip >> (8 * bFn)) & 0xFF) + ".";
+  String s = "";
+  for (byte i = 0; i < 3; i++) {
+    s += String((ip >> (8 * i)) & 0xFF) + ".";
   }
-  sFn += String(((ip >> 8 * 3)) & 0xFF);
-  return sFn;
+  s += String((ip >> 24) & 0xFF);
+  return s;
 }
+
 // -------------------------------------------------------------------
-// Crear un path para los Topicos en MQTT
-// v1/devices/iot32_admin/ESP329B1C52100C3D
+// Path MQTT estándar
 // -------------------------------------------------------------------
 String pathMqtt() {
-  return String("v1/devices/" + String(mqtt_user) + "/" +
-                String(mqtt_cloud_id));
+  return "v1/devices/" + String(mqtt_user) + "/" + String(mqtt_cloud_id);
 }
+
 // -------------------------------------------------------------------
 // Parpadeo LED MQTT Recepción
 // -------------------------------------------------------------------
 void mqttRX() {
-  for (int16_t i = 0; i < 1; i++) {
-    blinkRandomSingle(5, 50, MQTTLED);
-    vTaskDelay(10);
-    setOffSingle(MQTTLED);
-  }
+  blinkRandomSingle(5, 50, MQTTLED);
+  vTaskDelay(10);
+  setOffSingle(MQTTLED);
 }
+
 // -------------------------------------------------------------------
 // Parpadeo LED MQTT Transmisión
 // -------------------------------------------------------------------
@@ -123,41 +125,32 @@ void mqttTX() {
     vTaskDelay(10);
   }
 }
+
 // -------------------------------------------------------------------
-// Retorna segundos como "d:hh:mm:ss"
+// Tiempo formateado "d:hh:mm:ss"
 // -------------------------------------------------------------------
 String longTimeStr(const time_t &t) {
   String s = String(t / SECS_PER_DAY) + ':';
-  if (hour(t) < 10) {
-    s += '0';
-  }
-  s += String(hour(t)) + ':';
-  if (minute(t) < 10) {
-    s += '0';
-  }
+  if (hour(t)   < 10) s += '0';
+  s += String(hour(t))   + ':';
+  if (minute(t) < 10) s += '0';
   s += String(minute(t)) + ':';
-  if (second(t) < 10) {
-    s += '0';
-  }
+  if (second(t) < 10) s += '0';
   s += String(second(t));
   return s;
 }
+
 // -------------------------------------------------------------------
-// Retorna la calidad de señal WIFI en %
+// Calidad de señal WiFi en %
 // -------------------------------------------------------------------
 int getRSSIasQuality(int RSSI) {
-  int quality = 0;
-  if (RSSI <= -100) {
-    quality = 0;
-  } else if (RSSI >= -50) {
-    quality = 100;
-  } else {
-    quality = 2 * (RSSI + 100);
-  }
-  return quality;
+  if (RSSI <= -100) return 0;
+  if (RSSI >= -50)  return 100;
+  return 2 * (RSSI + 100);
 }
+
 // -------------------------------------------------------------------
-// Retorna el contenido del Body Enviado como JSON metodo POST/PUT
+// Obtener body de una petición HTTP como String
 // -------------------------------------------------------------------
 String GetBodyContent(uint8_t *data, size_t len) {
   String content = "";
@@ -166,24 +159,18 @@ String GetBodyContent(uint8_t *data, size_t len) {
   }
   return content;
 }
+
 // -------------------------------------------------------------------
-// Retorna el Tipo de Encriptacion segun el codigo (0-1-2-3-4-5)
+// Tipo de encriptación WiFi
 // -------------------------------------------------------------------
 String EncryptionType(int encryptionType) {
   switch (encryptionType) {
-  case (0):
-    return "Open";
-  case (1):
-    return "WEP";
-  case (2):
-    return "WPA_PSK";
-  case (3):
-    return "WPA2_PSK";
-  case (4):
-    return "WPA_WPA2_PSK";
-  case (5):
-    return "WPA2_ENTERPRISE";
-  default:
-    return "UNKOWN";
+    case 0: return "Open";
+    case 1: return "WEP";
+    case 2: return "WPA_PSK";
+    case 3: return "WPA2_PSK";
+    case 4: return "WPA_WPA2_PSK";
+    case 5: return "WPA2_ENTERPRISE";
+    default: return "UNKNOWN";
   }
 }

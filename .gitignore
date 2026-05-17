@@ -20,3 +20,10 @@ node_modules/
 # Build
 /dist
 /build
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Temp files
+~$*.*

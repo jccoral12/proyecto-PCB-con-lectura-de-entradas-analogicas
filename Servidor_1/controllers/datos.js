@@ -1,13 +1,9 @@
 const { response, request } = require('express');
 const { Dato, Dispositivo } = require('../models');
 
-/**
- * Obtiene todas las lecturas de los sensores.
- */
 const datosGet = async (req = request, res = response) => {
     try {
         const { limite = 50, desde = 0, uuid } = req.query;
-
         const query = uuid ? { dispositivo_uuid: uuid } : {};
 
         const [total, datos] = await Promise.all([
@@ -15,29 +11,21 @@ const datosGet = async (req = request, res = response) => {
             Dato.find(query)
                 .skip(Number(desde))
                 .limit(Number(limite))
-                .sort({ fecha_insercion: -1 }) // Mostrar los más recientes primero
+                .sort({ fecha_insercion: -1 })
         ]);
 
-        res.json({
-            total,
-            datos
-        });
+        res.json({ total, datos });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            msg: 'Error al obtener los datos'
-        });
+        res.status(500).json({ msg: 'Error al obtener los datos' });
     }
 }
 
-/**
- * Registra una nueva lectura de sensor.
- */
 const datosPost = async (req, res = response) => {
     try {
-        const { dispositivo_uuid, valor } = req.body;
+        const { dispositivo_uuid, sensor1, sensor2, sensor3, sensor4 } = req.body;
 
-        // Opcional: Verificar que el dispositivo exista
+        // Verificar que el dispositivo exista
         const existeDispositivo = await Dispositivo.findOne({ uuid: dispositivo_uuid });
         if (!existeDispositivo) {
             return res.status(404).json({
@@ -45,14 +33,10 @@ const datosPost = async (req, res = response) => {
             });
         }
 
-        const dato = new Dato({ dispositivo_uuid, valor });
-
-        // Guardar en DB
+        const dato = new Dato({ dispositivo_uuid, sensor1, sensor2, sensor3, sensor4 });
         await dato.save();
 
-        res.status(201).json({
-            dato
-        });
+        res.status(201).json({ dato });
     } catch (error) {
         console.error(error);
         res.status(400).json({

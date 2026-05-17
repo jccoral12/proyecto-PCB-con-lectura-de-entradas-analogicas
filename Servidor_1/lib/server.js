@@ -1,11 +1,17 @@
+const http    = require('http');
 const express = require('express');
-const cors = require('cors');
+const cors    = require('cors');
 const { dbConnection } = require('../database/config');
-const mqttClient = require('./mqtt-client');
+const mqttClient       = require('./mqtt-client');
+const { initSocket }   = require('./socket-server');
 
 /**
  * Clase que representa el servidor de la aplicación.
  * Configura los middlewares, las rutas y el puerto de escucha.
+ *
+ * CAMBIO: se envuelve Express con http.createServer() para que
+ * Socket.IO comparta el mismo puerto sin modificar ninguna ruta
+ * ni middleware existente.
  */
 class Server {
 
@@ -14,19 +20,29 @@ class Server {
          * Aplicación de Express.
          * @type {express.Application}
          */
-        this.app  = express();
+        this.app = express();
 
-    /**
-     * Puerto en el que correrá el servidor. Usa fallback 3000 si no está definida.
-     * @type {string|number}
-     */
-    this.port = process.env.PORT || 3000;
+        /**
+         * Servidor HTTP de Node.js (envuelve Express).
+         * Necesario para que Socket.IO comparta el mismo puerto.
+         * @type {import('http').Server}
+         */
+        this.httpServer = http.createServer(this.app);
 
-    // Conectar a la base de datos (si la hay)
-    this.conectarDB();
+        /**
+         * Puerto en el que correrá el servidor. Usa fallback 3000 si no está definida.
+         * @type {string|number}
+         */
+        this.port = process.env.PORT || 3000;
 
-    // Inicializar el cliente MQTT
-    this.conectarMQTT();
+        // Conectar a la base de datos (sin cambios)
+        this.conectarDB();
+
+        // Inicializar Socket.IO y guardar referencia de io
+        this.io = initSocket(this.httpServer);
+
+        // Inicializar el cliente MQTT pasándole Socket.IO
+        this.conectarMQTT();
 
         /**
          * Ruta base para las APIs relacionadas con dispositivos.
@@ -34,6 +50,7 @@ class Server {
          */
         this.dispositivosPath = '/api/dispositivos';
         this.datosPath        = '/api/datos';
+        this.iaPath           = '/api/ia';
 
         // Middlewares: Funciones que añaden funcionalidad al web server
         this.middlewares();
@@ -50,14 +67,17 @@ class Server {
     }
 
     /**
-     * Inicializa el cliente MQTT para recibir datos del ESP32.
+     * Inicializa el cliente MQTT y le pasa la instancia de Socket.IO
+     * para que pueda emitir eventos en tiempo real al recibir mensajes.
      */
     conectarMQTT() {
+        mqttClient.setSocketServer(this.io);
         mqttClient.connect();
     }
 
     /**
      * Define y configura los middlewares globales de la aplicación.
+     * Sin cambios respecto al original.
      */
     middlewares() {
 
@@ -69,23 +89,26 @@ class Server {
 
         // Directorio Público: Define la carpeta para archivos estáticos
         this.app.use( express.static('public') );
-
     }
 
     /**
      * Define las rutas de la aplicación vinculando los endpoints con sus archivos de rutas.
+     * Sin cambios respecto al original.
      */
     routes() {
         this.app.use( this.dispositivosPath, require('../routes/dispositivos'));
         this.app.use( this.datosPath,        require('../routes/datos'));
+        this.app.use( this.iaPath,           require('../routes/ia'));
     }
 
     /**
-     * Inicia el servidor y lo pone a escuchar en el puerto especificado.
+     * Inicia el servidor HTTP (que incluye Express + Socket.IO)
+     * y lo pone a escuchar en el puerto especificado.
      */
     listen() {
-        this.app.listen( this.port, () => {
-            console.log('Servidor corriendo en puerto', this.port );
+        this.httpServer.listen( this.port, () => {
+            console.log('Servidor corriendo en puerto', this.port);
+            console.log(`Socket.IO disponible en ws://localhost:${this.port}`);
         });
     }
 
